@@ -22,7 +22,7 @@ import time
 
 # Configuration Constants
 GPIO_PIN = 1
-LIGHT_ON_SECONDS = 20 # how long to keep the light on as a multiple of REFRESH_RATE (eg. 1 means 1 x REFRESH_RATE)
+LIGHT_ON_SECONDS = 20
 
 # Global Vars
 cyclesOn = 0
@@ -38,14 +38,14 @@ if(team == ""):
 	omega_gpio.closepin(GPIO_PIN,'out')
 	exit()
 
-game, teamType = rl.findGame(t)
+game, teamType = redlite.findGame(t)
 
 if game == -1:
 	print("No Game Today")
 	omega_gpio.closepin(GPIO_PIN,'out')
 	exit()
 
-data = rl.loadGameData(game, teamType)
+data = redlite.loadGameData(game, teamType)
 
 refreshRate = data[0]
 team = data[1]
@@ -66,7 +66,7 @@ while(True):
 
 		refreshCounter = 0
 
-		goal, lastEvent, refreshRate = rl.goal(game, team, lastEvent)
+		goal, lastEvent, refreshRate = redlite.goal(game, team, lastEvent)
 
 		if (goal):
 			omega_gpio.setoutput(GPIO_PIN, 1)
