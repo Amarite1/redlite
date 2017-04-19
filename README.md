@@ -1,5 +1,7 @@
 # redlite
-Goal light for NHL games. [More to come]
+Goal light software for NHL games. Redlite pulls publicly available play-by-play data from the NHL website to determine when a goal has been scored. Included in this repository are a few different example applications (explained below) that can be used in conjunction with DIY hardware devices. In addition, the core Python script can be used to create custom implemenations.
+
+Redlite is not affiliated with, or endorsed by, the National Hockey League (NHL) or any other entity.
 
 ## Files
 - core.py : The core code that makes the web requests - acts like a module/library
