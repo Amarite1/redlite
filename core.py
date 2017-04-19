@@ -111,7 +111,6 @@ def goal(gameId, teamId, lastEvent):
 				if(play["type"].lower() == "goal" and play["teamid"] == teamId):
 					goal = True
 	except ValueError:
-		print("ValueError")
 		time.sleep(1)
 		return [False, lastEvent, 5]
 

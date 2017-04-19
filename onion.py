@@ -17,15 +17,17 @@
 
 import core as redlite
 import omega_gpio
+from sys import exit
 import time
 
 # Configuration Constants
 GPIO_PIN = 1
-REFRESH_RATE = 20
-LIGHT_ON_CYCLES = 1 # how long to keep the light on as a multiple of REFRESH_RATE (eg. 1 means 1 x REFRESH_RATE)
+LIGHT_ON_SECONDS = 20 # how long to keep the light on as a multiple of REFRESH_RATE (eg. 1 means 1 x REFRESH_RATE)
 
 # Global Vars
 cyclesOn = 0
+lightOn = False
+refreshCounter = 0
 
 # Setup
 omega_gpio.initpin(GPIO_PIN,'out')
@@ -34,23 +36,49 @@ team = redlite.promptTeam()
 if(team == ""):
 	print("Exiting...")
 	omega_gpio.closepin(GPIO_PIN,'out')
-	return
+	exit()
+
+game, teamType = rl.findGame(t)
+
+if game == -1:
+	print("No Game Today")
+	omega_gpio.closepin(GPIO_PIN,'out')
+	exit()
+
+data = rl.loadGameData(game, teamType)
+
+refreshRate = data[0]
+team = data[1]
+lastEvent = data[2]
 
 # Main Loop
 while(True):
 	
-	if (cyclesOn > 0):
-		cyclesOn ++
+	if (lightOn == True):
+		cyclesOn = cyclesOn + 1
 
-	if (cyclesOn > LIGHT_ON_CYCLES):
+	if (cyclesOn >= LIGHT_ON_SECONDS):
 		omega_gpio.setoutput(GPIO_PIN, 0)
 		cyclesOn = 0
+		lightOn = False
 
-	if (redlite.goal()):
-		omega_gpio.setoutput(GPIO_PIN, 1)
-		cyclesOn = 1
+	if(refreshCounter >= refreshRate):
 
-	time.sleep(REFRESH_RATE)
+		refreshCounter = 0
+
+		goal, lastEvent, refreshRate = rl.goal(game, team, lastEvent)
+
+		if (goal):
+			omega_gpio.setoutput(GPIO_PIN, 1)
+			lightOn = True
+
+	else:
+		refreshCounter = refreshCounter + 1
+
+	if(refreshRate == 0):
+		break
+
+	time.sleep(1)
 
 # End of Main Loop
 

@@ -20,6 +20,8 @@ from sys import exit
 import time
 
 t = rl.promptTeam()
+if(t == ""):
+	exit()
 game, teamType = rl.findGame(t)
 
 if (game == -1):
