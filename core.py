@@ -18,6 +18,7 @@
 import json
 import subprocess
 import time
+from socket import error as SocketError
 from urllib.request import urlopen
 
 
@@ -60,8 +61,8 @@ def getSeasonId():
 # end getSeasonId
 
 def findGame(team):
-	schedResp = urlopen(URL_SCHED_PROTO.format(season=getSeasonId()))
-	games = json.load(schedResp)
+	schedResp = __loadUrl(URL_SCHED_PROTO.format(season=getSeasonId()))
+	games = json.loads(schedResp)
 
 	dateStr = time.strftime("%Y%m%d", time.localtime())
 	gameId = -1 # game ID to use
@@ -83,9 +84,9 @@ def findGame(team):
 # end of findGame
 
 def loadGameData(gameId, teamType):
-	gameResp = urlopen(URL_GAME_PROTO.format(season=getSeasonId(), game=gameId))
+	gameResp = __loadUrl(URL_GAME_PROTO.format(season=getSeasonId(), game=gameId))
 
-	data = json.load(gameResp)["data"]
+	data = json.loads(gameResp)["data"]
 	game = data["game"]
 	plays = game["plays"]["play"]
 
@@ -95,12 +96,13 @@ def loadGameData(gameId, teamType):
 		teamId = game["awayteamid"]
 
 	return [data["refreshInterval"], teamId, len(plays)]
+# end of loadGameData
 
 def goal(gameId, teamId, lastEvent):
 	try:
-		gameResp = urlopen(URL_GAME_PROTO.format(season=getSeasonId(), game=gameId))
+		gameResp = __loadUrl(URL_GAME_PROTO.format(season=getSeasonId(), game=gameId))
 
-		data = json.load(gameResp)["data"]
+		data = json.loads(gameResp)["data"]
 		game = data["game"]
 		plays = game["plays"]["play"]
 
@@ -110,9 +112,13 @@ def goal(gameId, teamId, lastEvent):
 			for play in plays[lastEvent:]:
 				if(play["type"].lower() == "goal" and play["teamid"] == teamId):
 					goal = True
-	except ValueError:
+	except (ValueError, SocketError) as e:
+		print(e)
 		time.sleep(1)
 		return [False, lastEvent, 5]
 
 	return [goal, len(plays), data["refreshInterval"]]
-# end of loadGameData
+# end of goal
+
+def __loadUrl(url):
+	return urlopen(url).read().decode("UTF-8")
