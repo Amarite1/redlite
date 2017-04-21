@@ -16,31 +16,37 @@
 '''
 
 import core as redlite
-import serial
+import RPi.GPIO as gpio
 from sys import exit
+import time
 
-# Constants
-SERIAL_PORT = "COM1"
+# Configuration Constants
+GPIO_PIN = 4
+GPIO_MODE = gpio.BCM
 LIGHT_ON_SECONDS = 20
-COMMAND_ON = "on"
-COMMAND_OFF = "off"
 
-# Global Variables
+# Global Vars
 cyclesOn = 0
 lightOn = False
 refreshCounter = 0
 
 # Setup
+gpio.setmode(GPIO_MODE)
+gpio.setup(GPIO_PIN, gpio.OUT, initial=gpio.HIGH)
+gpio.setup(17, gpio.OUT, initial=gpio.HIGH)
+gpio.setup(27, gpio.OUT, initial=gpio.HIGH)
 team = redlite.promptTeam()
 
 if(team == ""):
 	print("Exiting...")
+	gpio.cleanup()
 	exit()
 
-game, teamType = redlite.findGame(t)
+game, teamType = redlite.findGame(team)
 
 if game == -1:
 	print("No Game Today")
+	gpio.cleanup()
 	exit()
 
 data = redlite.loadGameData(game, teamType)
@@ -49,8 +55,6 @@ refreshRate = data[0]
 team = data[1]
 lastEvent = data[2]
 
-ser = serial.Serial(SERIAL_PORT, 9600, timeout=1)
-
 # Main Loop
 while(True):
 	
@@ -58,7 +62,7 @@ while(True):
 		cyclesOn = cyclesOn + 1
 
 	if (cyclesOn >= LIGHT_ON_SECONDS):
-		ser.write(COMMAND_OFF)
+		gpio.output(GPIO_PIN, gpio.HIGH)
 		cyclesOn = 0
 		lightOn = False
 
@@ -69,7 +73,7 @@ while(True):
 		goal, lastEvent, refreshRate = redlite.goal(game, team, lastEvent)
 
 		if (goal):
-			ser.write(COMMAND_ON)
+			gpio.output(GPIO_PIN, gpio.LOW)
 			lightOn = True
 
 	else:
@@ -82,4 +86,5 @@ while(True):
 
 # End of Main Loop
 
-ser.close()
+# Shutdown
+gpio.cleanup()

@@ -8,3 +8,4 @@ Redlite is not affiliated with, or endorsed by, the National Hockey League (NHL)
 - test.py : Test client that outputs goal event to the console
 - desktop.py : [Untested] Desktop client that sends goal events over serial to a connected controller (eg. Arduino)
 - onion.py : [Untested] Client for the Onion Omega that turns on a GPIO pin when there's a goal
+- rpi.py : Client for the Raspberry Pi that turns on a GPIO pin when there's a goal
