@@ -16,6 +16,7 @@
 '''
 
 import core as redlite
+import encodings.idna
 import omega_gpio
 from sys import exit
 import time
@@ -35,14 +36,14 @@ team = redlite.promptTeam()
 
 if(team == ""):
 	print("Exiting...")
-	omega_gpio.closepin(GPIO_PIN,'out')
+	omega_gpio.closepin(GPIO_PIN)
 	exit()
 
-game, teamType = redlite.findGame(t)
+game, teamType = redlite.findGame(team)
 
 if game == -1:
 	print("No Game Today")
-	omega_gpio.closepin(GPIO_PIN,'out')
+	omega_gpio.closepin(GPIO_PIN)
 	exit()
 
 data = redlite.loadGameData(game, teamType)
@@ -83,4 +84,4 @@ while(True):
 # End of Main Loop
 
 # Shutdown
-omega_gpio.closepin(GPIO_PIN,'out')
+omega_gpio.closepin(GPIO_PIN)
