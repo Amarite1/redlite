@@ -37,6 +37,9 @@ gpio.setup(17, gpio.OUT, initial=gpio.HIGH)
 gpio.setup(27, gpio.OUT, initial=gpio.HIGH)
 team = redlite.promptTeam()
 
+print("WARNING: This script is out of date and WILL NOT WORK with the new version of redlite!")
+exit()
+
 if(team == ""):
 	print("Exiting...")
 	gpio.cleanup()

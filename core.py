@@ -24,7 +24,7 @@ from urllib.request import urlopen
 
 #CONSTANTS
 URL_SCHED_PROTO = "http://live.nhl.com/GameData/SeasonSchedule-{season}.json"
-URL_GAME_PROTO = "http://live.nhl.com/GameData/{season}/{game}/PlayByPlay.json"
+URL_GAME_PROTO = "http://statsapi.web.nhl.com/api/v1/game/{game}/feed/live"
 
 TEAM_CODES = [
 				"TOR", "OTT", "CGY", "EDM", "STL",
@@ -72,11 +72,11 @@ def findGame(team):
 		if game["est"].startswith(dateStr):
 
 			if game["a"] == team.upper():
-				teamType = 1
+				teamType = "away"
 				gameId = game["id"]
 				break
 			elif game["h"] == team.upper():
-				teamType = 0
+				teamType = "home"
 				gameId = game["id"]
 				break
 
@@ -84,40 +84,30 @@ def findGame(team):
 # end of findGame
 
 def loadGameData(gameId, teamType):
-	gameResp = __loadUrl(URL_GAME_PROTO.format(season=getSeasonId(), game=gameId))
+	gameResp = __loadUrl(URL_GAME_PROTO.format(game=gameId))
 
-	data = json.loads(gameResp)["data"]
-	game = data["game"]
-	plays = game["plays"]["play"]
+	data = json.loads(gameResp)
 
-	if(teamType == 0):
-		teamId = game["hometeamid"]
-	elif(teamType == 1):
-		teamId = game["awayteamid"]
-
-	return [data["refreshInterval"], teamId, len(plays)]
+	return [data["metaData"]["wait"], data["liveData"]["boxscore"]["teams"][teamType]["teamStats"]["teamSkaterStats"]["goals"]]
 # end of loadGameData
 
-def goal(gameId, teamId, lastEvent):
+def goal(gameId, teamType, lastScore):
 	try:
-		gameResp = __loadUrl(URL_GAME_PROTO.format(season=getSeasonId(), game=gameId))
+		gameResp = __loadUrl(URL_GAME_PROTO.format(game=gameId))
 
-		data = json.loads(gameResp)["data"]
-		game = data["game"]
-		plays = game["plays"]["play"]
-
+		data = json.loads(gameResp)
 		goal = False
 
-		if lastEvent < len(plays):
-			for play in plays[lastEvent:]:
-				if(play["type"].lower() == "goal" and play["teamid"] == teamId):
-					goal = True
+		score = data["liveData"]["boxscore"]["teams"][teamType]["teamStats"]["teamSkaterStats"]["goals"]
+		if(lastScore < score):
+			goal = True
+
 	except (ValueError, SocketError) as e:
 		print(e)
 		time.sleep(1)
-		return [False, lastEvent, 5]
+		return [False, lastScore, 5]
 
-	return [goal, len(plays), data["refreshInterval"]]
+	return [goal, score, data["metaData"]["wait"]]
 # end of goal
 
 def __loadUrl(url):

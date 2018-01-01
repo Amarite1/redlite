@@ -49,8 +49,7 @@ if game == -1:
 data = redlite.loadGameData(game, teamType)
 
 refreshRate = data[0]
-team = data[1]
-lastEvent = data[2]
+lastScore = data[2]
 
 # Main Loop
 while(True):
@@ -67,7 +66,7 @@ while(True):
 
 		refreshCounter = 0
 
-		goal, lastEvent, refreshRate = redlite.goal(game, team, lastEvent)
+		goal, lastScore, refreshRate = redlite.goal(game, teamType, lastScore)
 
 		if (goal):
 			omega_gpio.setoutput(GPIO_PIN, 1)

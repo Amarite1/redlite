@@ -32,12 +32,11 @@ if (game == -1):
 data = rl.loadGameData(game, teamType)
 
 interval = data[0]
-team = data[1]
-lastEvent = data[2]
+lastScore = data[1]
 
 while(True):
 
-	goal, lastEvent, interval = rl.goal(game, team, lastEvent)
+	goal, lastScore, interval = rl.goal(game, teamType, lastScore)
 
 	if(goal):
 		print("%s GOAL!"%t)
