@@ -22,7 +22,9 @@ from sys import exit
 import time
 
 # Configuration Constants
-GPIO_PIN = 1
+GPIO_PINS_R = [1, 6 ,7, 8]
+GPIO_PINS_G = [18, 19, 20, 21]
+GPIO_PINS = GPIO_PINS_R + GPIO_PINS_G
 LIGHT_ON_SECONDS = 20
 
 # Global Vars
@@ -30,26 +32,65 @@ cyclesOn = 0
 lightOn = False
 refreshCounter = 0
 
+# Light Functions
+def initLight():
+	for pin in GPIO_PINS:
+		omega_gpio.initpin(pin, 'out')
+
+def testLight():
+	setLight(0)
+	time.sleep(0.5)
+	setLight(1)
+	time.sleep(0.5)
+	setLight(2)
+	time.sleep(0.5)
+	setLight(0)
+
+def endLight():
+	for pin in GPIO_PINS:
+		omega_gpio.closepin(pin)
+
+def setLight(state):
+	if state == 0:
+		for pin in GPIO_PINS:
+			omega_gpio.setoutput(pin, 0)
+
+	elif state == 1:
+		for pin in GPIO_PINS_R:
+			omega_gpio.setoutput(pin, 1)
+
+	elif state == 2:
+		for pin in GPIO_PINS_G:
+			omega_gpio.setoutput(pin, 1)
+
 # Setup
-omega_gpio.initpin(GPIO_PIN,'out')
+try:
+	initLight()
+except:
+	endLight()
+	initLight()
+
+testLight()
+setLight(2)
+
 team = redlite.promptTeam()
 
 if(team == ""):
 	print("Exiting...")
-	omega_gpio.closepin(GPIO_PIN)
+	endLight()
 	exit()
 
 game, teamType = redlite.findGame(team)
 
 if game == -1:
 	print("No Game Today")
-	omega_gpio.closepin(GPIO_PIN)
+	endLight()
 	exit()
 
 data = redlite.loadGameData(game, teamType)
 
 refreshRate = data[0]
-lastScore = data[2]
+lastScore = data[1]
 
 # Main Loop
 while(True):
@@ -58,7 +99,7 @@ while(True):
 		cyclesOn = cyclesOn + 1
 
 	if (cyclesOn >= LIGHT_ON_SECONDS):
-		omega_gpio.setoutput(GPIO_PIN, 0)
+		setLight(0)
 		cyclesOn = 0
 		lightOn = False
 
@@ -69,7 +110,7 @@ while(True):
 		goal, lastScore, refreshRate = redlite.goal(game, teamType, lastScore)
 
 		if (goal):
-			omega_gpio.setoutput(GPIO_PIN, 1)
+			setLight(1)
 			lightOn = True
 
 	else:
